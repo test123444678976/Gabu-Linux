@@ -1,0 +1,141 @@
+# Formato:  nome ; origem ; sistema-de-build ; argumentos
+#
+# origem:  url:<URL>                      URL directo
+#          xorg:<dir>/<pacote>            xorg.freedesktop.org/archive/individual/<dir>/
+#          gnome:<módulo>[:<série>]       download.gnome.org (última série estável)
+#          mate:<pacote>                  pub.mate-desktop.org/releases/$MATE_SERIES/
+#          gh:<dono>/<repo>               último tag no GitHub (tarball do tag)
+#          ghrel:<dono>/<repo>|<ERE>      asset da última release no GitHub
+#          gl:<grupo>/<projecto>          último tag no gitlab.freedesktop.org
+#          idx:<URL-índice>|<nome-ou-ERE> último ficheiro num índice HTTP
+#          raw:<URL>                      ficheiro avulso (embrulhado num tar)
+#          rust                           toolchain Rust estável (binário oficial)
+# build:   auto | meson | cmake | custom:<função>
+# args:    auto  -> "?--flag" só se o configure a suportar
+#          meson -> "-Dopc=valor" só se a opção existir (true/false/enabled/disabled normalizados)
+#
+# As versões são resolvidas em CI; nada aqui está fixo excepto onde o URL o exige.
+
+[apt]
+libmd;idx:https://archive.hadrons.org/software/libmd/|libmd;auto;
+cmake;ghrel:Kitware/CMake|cmake-[0-9.]+\.tar\.gz;custom:cmake;
+nettle;idx:https://ftp.gnu.org/gnu/nettle/|nettle;auto;
+libtasn1;idx:https://ftp.gnu.org/gnu/libtasn1/|libtasn1;auto;
+gnutls;idx:https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/|gnutls;auto;--with-included-unistring --without-p11-kit --without-brotli --without-zstd ?--disable-doc ?--disable-tests
+xxhash;gh:Cyan4973/xxHash;custom:xxhash;
+triehash;raw:https://raw.githubusercontent.com/julian-klode/triehash/master/triehash.pl;custom:triehash;
+dpkg;idx:https://deb.debian.org/debian/pool/main/d/dpkg/|dpkg_1\.22\.[0-9]+\.tar\.xz;custom:dpkg;
+apt;idx:https://deb.debian.org/debian/pool/main/a/apt/|apt_3\.0\.[0-9]+\.tar\.xz;custom:apt;
+
+[xorg-libs]
+util-macros;xorg:util/util-macros;auto;
+xorgproto;xorg:proto/xorgproto;meson;
+libXau;xorg:lib/libXau;auto;
+libXdmcp;xorg:lib/libXdmcp;auto;
+xcb-proto;xorg:proto/xcb-proto;auto;
+libxcb;xorg:lib/libxcb;auto;?--without-doxygen
+xtrans;xorg:lib/xtrans;auto;
+libX11;xorg:lib/libX11;auto;?--disable-specs
+libXext;xorg:lib/libXext;auto;
+libICE;xorg:lib/libICE;auto;
+libSM;xorg:lib/libSM;auto;
+libXt;xorg:lib/libXt;auto;
+libXmu;xorg:lib/libXmu;auto;
+libXpm;xorg:lib/libXpm;auto;
+libXfixes;xorg:lib/libXfixes;auto;
+libXrender;xorg:lib/libXrender;auto;
+libXcomposite;xorg:lib/libXcomposite;auto;
+libXcursor;xorg:lib/libXcursor;auto;
+libXdamage;xorg:lib/libXdamage;auto;
+libXi;xorg:lib/libXi;auto;
+libXinerama;xorg:lib/libXinerama;auto;
+libXrandr;xorg:lib/libXrandr;auto;
+libXres;xorg:lib/libXres;auto;
+libXtst;xorg:lib/libXtst;auto;
+libXv;xorg:lib/libXv;auto;
+libXxf86vm;xorg:lib/libXxf86vm;auto;
+libXScrnSaver;xorg:lib/libXScrnSaver;auto;
+libXpresent;xorg:lib/libXpresent;auto;
+libxkbfile;xorg:lib/libxkbfile;auto;
+libxshmfence;xorg:lib/libxshmfence;auto;
+libpciaccess;xorg:lib/libpciaccess;meson;
+libfontenc;xorg:lib/libfontenc;auto;
+
+[gfx]
+glib;gnome:glib;meson;-Dintrospection=disabled -Dman-pages=disabled -Ddocumentation=false -Dtests=false -Dsysprof=disabled -Dselinux=disabled
+libxml2;gnome:libxml2;cmake;-DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ICU=OFF -DLIBXML2_WITH_TESTS=OFF -DBUILD_SHARED_LIBS=ON
+libxslt;gnome:libxslt;auto;--without-python --without-crypto
+libpng;gh:pnggroup/libpng;cmake;-DPNG_STATIC=OFF -DPNG_TESTS=OFF
+libjpeg-turbo;gh:libjpeg-turbo/libjpeg-turbo;cmake;-DENABLE_STATIC=FALSE -DWITH_JPEG8=ON
+tiff;idx:https://download.osgeo.org/libtiff/|tiff;auto;--without-x
+freetype;idx:https://download.savannah.gnu.org/releases/freetype/|freetype;auto;--without-harfbuzz
+harfbuzz;gh:harfbuzz/harfbuzz;meson;-Dglib=enabled -Dfreetype=enabled -Dgobject=disabled -Dicu=disabled -Dcairo=disabled -Dtests=disabled -Ddocs=disabled -Dintrospection=disabled -Dbenchmark=disabled
+fontconfig;idx:https://www.freedesktop.org/software/fontconfig/release/|fontconfig;auto;?--disable-docs
+libXft;xorg:lib/libXft;auto;
+pixman;idx:https://cairographics.org/releases/|pixman;meson;-Dtests=disabled -Ddemos=disabled -Dgtk=disabled -Dlibpng=disabled
+cairo;idx:https://cairographics.org/releases/|cairo;meson;-Dtests=disabled -Dxlib=enabled -Dxcb=enabled -Dfontconfig=enabled -Dfreetype=enabled -Dglib=enabled -Dpng=enabled -Dzlib=enabled -Dspectre=disabled -Dsymbol-lookup=disabled
+fribidi;gh:fribidi/fribidi;meson;-Ddocs=false -Dtests=false
+pango;gnome:pango;meson;-Dintrospection=disabled -Dbuild-testsuite=false -Dbuild-examples=false -Dxft=enabled -Dfontconfig=enabled -Dcairo=enabled
+shared-mime-info;gl:xdg/shared-mime-info;meson;-Dupdate-mimedb=true -Dbuild-tests=false -Dbuild-translations=false
+gdk-pixbuf;gnome:gdk-pixbuf;meson;-Dintrospection=disabled -Dman=false -Dgtk_doc=false -Dtests=false -Dinstalled_tests=false -Dglycin=disabled
+libepoxy;gh:anholt/libepoxy;meson;-Degl=yes -Dglx=yes -Dx11=true -Dtests=false -Ddocs=false
+at-spi2-core;gnome:at-spi2-core;meson;-Dintrospection=disabled -Ddocs=false -Dx11=enabled
+hicolor-icon-theme;idx:https://icon-theme.freedesktop.org/releases/|hicolor-icon-theme;auto;
+gsettings-desktop-schemas;gnome:gsettings-desktop-schemas;meson;-Dintrospection=false
+dconf;gnome:dconf;meson;-Dman=false -Dvapi=false -Dgtk_doc=false -Dbash_completion=false
+adwaita-icon-theme;gnome:adwaita-icon-theme;meson;
+desktop-file-utils;idx:https://www.freedesktop.org/software/desktop-file-utils/releases/|desktop-file-utils;meson;
+gtk3;gnome:gtk+:3.24;meson;-Dx11_backend=true -Dwayland_backend=false -Dbroadway_backend=false -Dintrospection=false -Dgtk_doc=false -Dman=false -Ddemos=false -Dexamples=false -Dtests=false -Dcolord=no -Dcloudproviders=false -Dtracker3=false
+rust;rust;custom:rust;
+librsvg;gnome:librsvg;meson;-Dintrospection=disabled -Dvala=disabled -Ddocs=disabled -Dtests=false -Dpixbuf-loader=enabled
+
+[xserver]
+libxcvt;xorg:lib/libxcvt;meson;
+xkeyboard-config;xorg:data/xkeyboard-config;meson;
+xkbcomp;xorg:app/xkbcomp;auto;
+libXfont2;xorg:lib/libXfont2;auto;?--disable-devel-docs
+libdrm;idx:https://dri.freedesktop.org/libdrm/|libdrm;meson;-Dintel=disabled -Dradeon=disabled -Damdgpu=disabled -Dnouveau=disabled -Dvmwgfx=disabled -Dfreedreno=disabled -Dvc4=disabled -Detnaviv=disabled -Dman-pages=disabled -Dvalgrind=disabled -Dtests=false -Dcairo-tests=disabled -Dudev=true
+mtdev;idx:https://bitmath.org/code/mtdev/|mtdev;auto;
+libevdev;idx:https://www.freedesktop.org/software/libevdev/|libevdev;meson;-Dtests=disabled -Ddocumentation=disabled
+libinput;idx:https://www.freedesktop.org/software/libinput/|libinput;meson;-Ddebug-gui=false -Dtests=false -Ddocumentation=false -Dlibwacom=false
+xorg-server;xorg:xserver/xorg-server;meson;-Dglamor=false -Dglx=false -Ddri2=false -Ddri3=false -Dxephyr=false -Dxnest=false -Dxvfb=false -Dsystemd_logind=false -Dsuid_wrapper=true -Dxkb_output_dir=/var/lib/xkb -Dudev=true -Dudev_kms=true -Dsecure-rpc=false -Ddocs=false -Ddevel-docs=false -Dsha1=libcrypto -Dxorg=true
+xf86-input-libinput;xorg:driver/xf86-input-libinput;auto;
+xinit;xorg:app/xinit;auto;
+xauth;xorg:app/xauth;auto;
+setxkbmap;xorg:app/setxkbmap;auto;
+xrdb;xorg:app/xrdb;auto;
+xset;xorg:app/xset;auto;
+dejavu-fonts;url:https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_2_37/dejavu-fonts-ttf-2.37.tar.bz2;custom:dejavu_fonts;
+
+[mate]
+libnotify;gnome:libnotify;meson;-Dtests=false -Dman=false -Dgtk_doc=false -Dintrospection=disabled -Ddocbook_docs=disabled
+libogg;idx:https://downloads.xiph.org/releases/ogg/|libogg;auto;
+libvorbis;idx:https://downloads.xiph.org/releases/vorbis/|libvorbis;auto;
+libcanberra;url:http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.30.tar.xz;auto;--disable-oss --disable-alsa --disable-pulse --disable-gstreamer --disable-tdb --disable-lynx --enable-gtk3 --with-builtin=dso
+startup-notification;idx:https://www.freedesktop.org/software/startup-notification/releases/|startup-notification;auto;
+libwnck;gnome:libwnck:43;meson;-Dintrospection=disabled -Dgtk_doc=false -Dinstall_tests=false
+libgtop;gnome:libgtop;auto;?--disable-introspection
+libexif;ghrel:libexif/libexif|libexif-[0-9.]+\.tar\.(xz|bz2|gz);auto;
+iso-codes;idx:https://deb.debian.org/debian/pool/main/i/iso-codes/|iso-codes_[0-9.]+\.orig\.tar\.xz;auto;
+libxklavier;url:https://people.freedesktop.org/~svu/libxklavier-5.4.tar.bz2;auto;--disable-introspection --disable-vala
+nghttp2;ghrel:nghttp2/nghttp2|nghttp2-[0-9.]+\.tar\.xz;auto;--enable-lib-only
+libpsl;ghrel:rockdaemon/libpsl|libpsl-[0-9.]+\.tar\.gz;auto;
+libsoup;gnome:libsoup;meson;-Dintrospection=disabled -Dvapi=disabled -Dtests=false -Ddocs=disabled -Dgssapi=disabled -Dsysprof=disabled -Dtls_check=false -Dbrotli=disabled -Dntlm=disabled
+vte;gnome:vte;meson;-Dgtk3=true -Dgtk4=false -Dgir=false -Dvapi=false -Dsixel=false -Ddocs=false
+mate-common;mate:mate-common;auto;
+mate-desktop;mate:mate-desktop;auto;
+libmatekbd;mate:libmatekbd;auto;
+libmatemixer;mate:libmatemixer;auto;?--disable-alsa ?--disable-pulseaudio ?--disable-oss
+libmateweather;mate:libmateweather;auto;
+mate-menus;mate:mate-menus;auto;
+marco;mate:marco;auto;
+mate-session-manager;mate:mate-session-manager;auto;?--with-systemd
+mate-settings-daemon;mate:mate-settings-daemon;auto;?--disable-polkit ?--disable-pulse ?--disable-smartcard-support
+mate-control-center;mate:mate-control-center;auto;?--disable-polkit
+mate-panel;mate:mate-panel;auto;
+mate-notification-daemon;mate:mate-notification-daemon;auto;
+caja;mate:caja;auto;?--disable-xmp ?--disable-packagekit
+mate-terminal;mate:mate-terminal;auto;
+mate-themes;mate:mate-themes;auto;
+mate-icon-theme;mate:mate-icon-theme;auto;
+mate-backgrounds;mate:mate-backgrounds;auto;
